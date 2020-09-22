@@ -1,6 +1,6 @@
 ![](logo.png)
 # Overview
-This is a getting started sample application for showcasing "Spring Data Azure Cosmos DB" repository
+This is a getting started sample application for showcasing "Spring Data Azure Cosmos DB" 
 
 # Getting started
 
