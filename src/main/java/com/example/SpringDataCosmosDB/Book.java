@@ -1,10 +1,17 @@
 package com.example.SpringDataCosmosDB;
 
-import com.microsoft.azure.spring.data.cosmosdb.core.mapping.Document;
-import com.microsoft.azure.spring.data.cosmosdb.core.mapping.PartitionKey;
+import com.azure.spring.data.cosmos.core.mapping.Container;
+import com.azure.spring.data.cosmos.core.mapping.Container;
+import com.azure.spring.data.cosmos.core.mapping.PartitionKey;
+import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.annotation.Version;
 
-@Document(collection = "ReadingList")
+import java.time.OffsetDateTime;
+import java.util.Date;
+
+@Container(containerName = "ReadingList")
 public class Book {
 
 
@@ -15,6 +22,12 @@ public class Book {
     private String title;
     private String author;
     private String description;
+    @CreatedDate
+    private Date createdDate;
+    @LastModifiedDate
+    private Date lastModifiedByDate;
+    @Version
+    String _etag;
 
 
     public String getId() {
@@ -63,6 +76,30 @@ public class Book {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public Date getCreatedDate() {
+        return createdDate;
+    }
+
+    public void setCreatedDate(Date createdDate) {
+        this.createdDate = createdDate;
+    }
+
+    public Date getLastModifiedByDate() {
+        return lastModifiedByDate;
+    }
+
+    public void setLastModifiedByDate(Date lastModifiedByDate) {
+        this.lastModifiedByDate = lastModifiedByDate;
+    }
+
+    public String get_etag() {
+        return _etag;
+    }
+
+    public void set_etag(String _etag) {
+        this._etag = _etag;
     }
 
     @Override

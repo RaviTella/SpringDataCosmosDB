@@ -1,15 +1,25 @@
 package com.example.SpringDataCosmosDB;
 
-import com.azure.data.cosmos.CosmosKeyCredential;
-import com.microsoft.azure.spring.data.cosmosdb.config.AbstractCosmosConfiguration;
-import com.microsoft.azure.spring.data.cosmosdb.config.CosmosDBConfig;
-import com.microsoft.azure.spring.data.cosmosdb.repository.config.EnableCosmosRepositories;
+import com.azure.core.credential.AzureKeyCredential;
+import com.azure.cosmos.CosmosClientBuilder;
+import com.azure.cosmos.DirectConnectionConfig;
+import com.azure.cosmos.GatewayConnectionConfig;
+
+import com.azure.spring.data.cosmos.config.AbstractCosmosConfiguration;
+import com.azure.spring.data.cosmos.config.CosmosConfig;
+import com.azure.spring.data.cosmos.core.ResponseDiagnostics;
+import com.azure.spring.data.cosmos.core.ResponseDiagnosticsProcessor;
+import com.azure.spring.data.cosmos.core.mapping.EnableCosmosAuditing;
+import com.azure.spring.data.cosmos.repository.config.EnableCosmosRepositories;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.lang.Nullable;
 
 @Configuration
 @EnableCosmosRepositories
+@EnableCosmosAuditing
 
 public class AppConfiguration extends AbstractCosmosConfiguration {
     @Value("${azure.cosmosdb.uri}")
@@ -21,11 +31,40 @@ public class AppConfiguration extends AbstractCosmosConfiguration {
     @Value("${azure.cosmosdb.database}")
     private String dbName;
 
-    private CosmosKeyCredential cosmosKeyCredential;
+    private AzureKeyCredential azureKeyCredential;
+
+    @Value("${azure.cosmos.queryMetricsEnabled}")
+    private boolean queryMetricsEnabled;
+
     @Bean
-    public CosmosDBConfig getConfig() {
-        this.cosmosKeyCredential = new CosmosKeyCredential(key);
-        return CosmosDBConfig.builder(uri, this.cosmosKeyCredential, dbName).build();
+    public CosmosClientBuilder getCosmosClientBuilder() {
+        this.azureKeyCredential = new AzureKeyCredential(key);
+        DirectConnectionConfig directConnectionConfig = new DirectConnectionConfig();
+        GatewayConnectionConfig gatewayConnectionConfig = new GatewayConnectionConfig();
+        return new CosmosClientBuilder()
+                .endpoint(uri)
+                .credential(azureKeyCredential)
+                .directMode(directConnectionConfig, gatewayConnectionConfig);
     }
 
+    @Override
+    public CosmosConfig cosmosConfig() {
+        return CosmosConfig
+                .builder()
+                .enableQueryMetrics(queryMetricsEnabled)
+                .responseDiagnosticsProcessor(new ResponseDiagnosticsProcessorImplementation())
+                .build();
+    }
+
+    private static class ResponseDiagnosticsProcessorImplementation implements ResponseDiagnosticsProcessor {
+        @Override
+        public void processResponseDiagnostics(@Nullable ResponseDiagnostics responseDiagnostics) {
+           // logger.info("Response Diagnostics {}", responseDiagnostics);
+        }
+    }
+
+    @Override
+    protected String getDatabaseName() {
+        return dbName;
+    }
 }
